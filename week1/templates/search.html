@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>search</title>
+     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+     <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"> -->
+     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+</head>
+<style type="text/css">
+    .para1 { background-color:   #00b38f;}
+    .color{ background-color: #edf7ed; }
+    .table { background-color: #1bff6f; }
+    .table thead { background-color: #51b3b1; }
+    .table > thead > tr > th, .table > thead > tr > td { vertical-align: bottom; border-bottom: 1px solid #000; }
+    .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th { border-top: 1px solid #000; }
+    .pointer         { cursor: pointer; }
+</style>
+<body class="para1">
+    <form>
+    <br><br>
+    <div class="col-xs-3">
+       <input type="textbox" name="txt_search_box" id="txt_search_box" class="form-control" id="ex2">
+    </div>
+    <button id="btn_search" type="button" onclick="loadDoc()" class="btn btn-primary btn-md">Search</button><br><br>
+    </form>
+    <table border="2" id="datatable" class="table" class="color">
+        <thead class="">
+            <tr class="something">
+              <th class="col-md-1">Name</th>
+              <th class="col-md-1" >Mob. No</th>
+              <th class="col-md-1">Email</th>
+            </tr>
+        </thead>
+         <tbody>
+            {% if data %}
+                {% for i in data %}
+                    <tr>
+                        <td>{{i[0]}}</td>
+                        <td>{{i[1]}}</td>
+                        <td>{{i[2]}}</td>
+                    </tr>
+                {% endfor %}
+            {% endif%}
+        </tbody>
+    </table>
+    <br><br>
+    <h4 id="mobile"></h4>
+    <h4 id="email"></h4>
+    <script>
+        var total_call = 0;
+        function count_call() {
+            total_call += 1;
+            document.getElementById("mobile").innerHTML = "total call: "+total_call;
+            // console.log(total_call);
+        };
+
+        var total_email = 0;
+        function count_emal() {
+            total_email += 1;
+            document.getElementById("email").innerHTML = "total email: "+total_email;
+            // console.log(total_email);
+        };
+
+
+        function clickCol(col){
+            // console.log(" col <>>>>>>>>>>>>>>>>>>>>>>", col.parentNode.children[0].innerText);
+            var xhttp = new XMLHttpRequest();
+            xhttp.open("POST", "/savedata/", true);
+            xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            xhttp.send("row_val="+col.innerText+"&name="+col.parentNode.children[0].innerText);
+        }
+
+        function loadDoc() {
+            txt_val = document.getElementById("txt_search_box").value;
+            if (txt_val){
+                var xhttp = new XMLHttpRequest();
+                xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                        if(this.responseText){
+                            // console.log(this.responseText, typeof this.responseText)
+                            var table_data = [];
+                            var res = JSON.parse(this.responseText);
+                            // console.log('res: ' + res, 'type: ' + typeof res)
+                                table_data.push('<tr>');
+                                table_data.push('<th>Name</th>');
+                                table_data.push('<th>Mob. No</th>');
+                                table_data.push('<th>Email</th>');
+                                table_data.push('</tr>');
+                            for (i = 0; i < res.length; i++) { 
+                                table_data.push('<tr>');                               
+                                table_data.push('<td>'+res[i][0]+'</td>');
+                                table_data.push('<td onclick="clickCol(this); count_call();" class="pointer">'+res[i][1]+'</td>');
+                                table_data.push('<td onclick="clickCol(this); count_emal();" class="pointer">'+res[i][2]+'</td>');
+                                table_data.push('</tr>');
+                            }
+                            document.getElementById("datatable").innerHTML = table_data.join('');
+                        }else{
+                            alert("no data found");
+                        }
+                    }
+                     
+                };
+                xhttp.open("POST", "/search/", true);
+                xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                xhttp.send("txt_search_box="+txt_val); 
+            }
+        }
+
+</script>
+</body>
+</html>
